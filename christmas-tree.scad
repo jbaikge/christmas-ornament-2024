@@ -55,11 +55,21 @@ module base_trunk(height, trunk_width, thickness) {
 
 module hanger_trunk(height, trunk_width, thickness) {
     union() {
-        base_trunk(height, trunk_width, thickness);
-        translate([0, height + thickness, 0])
+        difference() {
+            base_trunk(height, trunk_width, thickness);
+            translate([-thickness / 2, height - height * 5 / 20, 0])
+                square([thickness, height * 2 / 20]);
+            translate([-thickness / 2, height - height * 17 / 20, 0])
+                square([thickness, height * 2 / 20]);
+        }
+        translate([0, height + thickness / 2, 0])
             difference() {
-                circle(thickness);
-                circle(thickness / 2);
+                union() {
+                    circle(thickness / 2);
+                    translate([0, -thickness / 2, 0])
+                        square(thickness, center = true);
+                }
+                circle(thickness / 4);
             }
     }
 }
