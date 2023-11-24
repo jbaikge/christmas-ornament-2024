@@ -2,28 +2,94 @@ $fn = 1000;
 
 height = 140;
 
+width = 100;
+
 thickness = 2;
 
+trunk_width = height / 10;
+
 positions = [
-    [height * 1, 0, 0],
-    [height * 2, 0, 0],
-    [height * 3, 0, 0],
-    [height * 4, 0, 0],
-    [height * 5, 0, 0],
-    [height * 6, 0, 0],
+    [width * 1, 0, 0],
+    [width * 2, 0, 0],
+    [width * 3, 0, 0],
+    [width * 4, 0, 0],
+    [width * 5, 0, 0],
+    [width * 6, height / 2, 0],
 ];
 
 num = len(positions);
 
-angles = rands(0, 360, num, height);
-
-echo("height", height, "num", num, "diameter", height * 1 / num);
+angles = rands(0, 360, num, height * width);
 
 linear_extrude(thickness) {
+    translate([trunk_width / 2 + 6, 6, 0])
+        hanger_trunk(height, trunk_width, thickness);
+
+    translate([trunk_width * 1.333 + 6, height + 6, 0])
+        rotate([180, 0, 0])
+            left_trunk(height, trunk_width, thickness);
+
+    translate([trunk_width * 1.666 + 6, height + 6, 0])
+        rotate([180, 0, 0])
+            right_trunk(height, trunk_width, thickness);
+
     for(i = [1 : 1 : num])
         translate(positions[i-1])
             rotate([0, 0, angles[i-1]])
-                layer(i + 4, height * (i / num));
+                layer(i + 4, width * log(10 * i / num));
+}
+
+module base_trunk(height, trunk_width, thickness) {
+    coords = [
+        [0, height],
+        [thickness / 2, height],
+        [trunk_width / 2, trunk_width / 2],
+        [trunk_width / 2 / 3, trunk_width / 2],
+        [trunk_width / 2 / 3, 0],
+        [0, 0]
+    ];
+    polygon(coords);
+    mirror([1, 0, 0])
+        polygon(coords);
+}
+
+module hanger_trunk(height, trunk_width, thickness) {
+    union() {
+        base_trunk(height, trunk_width, thickness);
+        translate([0, height + thickness, 0])
+            difference() {
+                circle(thickness);
+                circle(thickness / 2);
+            }
+    }
+}
+
+module left_trunk(height, trunk_width, thickness) {
+    difference() {
+        base_trunk(height, trunk_width, thickness);
+        translate([thickness / 2, 0, 0])
+            square([trunk_width / 2, height]);
+        translate([-thickness / 2, 0, 0])
+            square([thickness, height * 3 / 20]);
+        translate([-thickness / 2, height - height * 16 / 20, 0])
+            square([thickness, height * 12 / 20]);
+        translate([-thickness / 2, height - height * 3 / 20, 0])
+            square([thickness, height * 3 / 20]);
+    }
+}
+
+module right_trunk(height, trunk_width, thickness) {
+    difference() {
+        base_trunk(height, trunk_width, thickness);
+        translate([-trunk_width / 2 - thickness / 2, 0, 0])
+            square([trunk_width / 2, height]);
+        translate([-thickness / 2, 0, 0])
+            square([thickness, height * 4 / 20]);
+        translate([-thickness / 2, height - height * 15 / 20, 0])
+            square([thickness, height * 10 / 20]);
+        translate([-thickness / 2, height - height * 4 / 20, 0])
+            square([thickness, height * 4 / 20]);
+    }
 }
 
 module layer (teeth, diameter) {
