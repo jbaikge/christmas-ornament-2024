@@ -1,43 +1,78 @@
 $fn = 1000;
 
+// This defines the scale for everything
 height = 140;
 
-width = 100;
-
+// How thick to make the pieces
 thickness = 2;
 
-trunk_width = height / 10;
+width = height * 3 / 4;
+trunk_width = height / 8;
+
+// Needs to be set before positions is defined since we need
+// to call diameter()
+num = 6;
 
 positions = [
-    [width * 1, 0, 0],
-    [width * 2, 0, 0],
-    [width * 3, 0, 0],
-    [width * 4, 0, 0],
-    [width * 5, 0, 0],
-    [width * 6, height / 2, 0],
+    [
+        trunk_width * 3 + diameter(6) / 2,
+        diameter(1) / 2
+    ],
+    [
+        trunk_width * 3 + diameter(2) / 2,
+        diameter(2) / 2
+    ],
+    [
+        trunk_width * 3.5 + diameter(6) + diameter(5) - diameter(3) / 2,
+        diameter(3) / 2
+    ],
+    [
+        trunk_width * 3.5 + diameter(6),
+        diameter(4) / 2
+    ],
+    [
+        trunk_width * 4 + diameter(6) + diameter(5) / 2,
+        height - diameter(5) / 2
+    ],
+    [
+        trunk_width * 2.25 + diameter(6) / 2,
+        height - diameter(6) / 2
+    ],
 ];
-
-num = len(positions);
 
 angles = rands(0, 360, num, height * width);
 
-linear_extrude(thickness) {
-    translate([trunk_width / 2 + 6, 6, 0])
-        hanger_trunk(height, trunk_width, thickness);
+difference() {
+    linear_extrude(thickness) {
+        translate([trunk_width / 2, 0, 0])
+            hanger_trunk(height, trunk_width, thickness);
 
-    translate([trunk_width * 1.333 + 6, height + 6, 0])
-        rotate([180, 0, 0])
-            left_trunk(height, trunk_width, thickness);
+        translate([trunk_width * 1.333, height, 0])
+            rotate([180, 0, 0])
+                left_trunk(height, trunk_width, thickness);
 
-    translate([trunk_width * 1.666 + 6, height + 6, 0])
-        rotate([180, 0, 0])
-            right_trunk(height, trunk_width, thickness);
+        translate([trunk_width * 1.666, height, 0])
+            rotate([180, 0, 0])
+                right_trunk(height, trunk_width, thickness);
 
-    for(i = [1 : 1 : num])
-        translate(positions[i-1])
-            rotate([0, 0, angles[i-1]])
-                layer(i + 4, width * log(10 * i / num));
+        for(i = [1 : 1 : num])
+            translate(positions[i-1])
+                rotate([0, 0, angles[i-1]])
+                    layer(i + 4, diameter(i));
+    }
+
+    for (i = [1 : 1 : num]) {
+        position = [
+            positions[i-1][0],
+            positions[i-1][1],
+            -height * (num - i + 1) / (num + 1),
+        ];
+        translate(position)
+            vertical_trunk(height, trunk_width, thickness);
+    }
 }
+
+function diameter(i) = width * i / num;
 
 module base_trunk(height, trunk_width, thickness) {
     coords = [
@@ -100,6 +135,17 @@ module right_trunk(height, trunk_width, thickness) {
         translate([-thickness / 2, height - height * 4 / 20, 0])
             square([thickness, height * 4 / 20]);
     }
+}
+
+module vertical_trunk(height, trunk_width, thickness) {
+    rotate([90, 0, 0])
+        union() {
+            linear_extrude(thickness, center = true)
+                base_trunk(height, trunk_width, thickness);
+            rotate([0, 90, 0])
+                linear_extrude(thickness, center = true)
+                    base_trunk(height, trunk_width, thickness);
+        }
 }
 
 module layer (teeth, diameter) {
