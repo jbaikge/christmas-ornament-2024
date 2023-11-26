@@ -1,7 +1,7 @@
 $fn = 20;
 
 // This defines the scale for everything
-height = 110;
+height = 100;
 
 // How thick to make the pieces
 thickness = 2;
