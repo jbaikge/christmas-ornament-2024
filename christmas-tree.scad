@@ -181,19 +181,19 @@ color("goldenrod") linear_extrude(support_thickness) {
     // Top of layer #6
     translate([
         thickness * 3.5 + positions[5][0],
-        trunk_width + positions[5][1]
+        thickness * 2 + positions[5][1] + trunk_width
     ])
         square([thickness, diameter(6) / 2]);
     // Top of layer #4
     translate([
         thickness * 3.5 + positions[3][0],
-        positions[3][1] + trunk_width
+        thickness * 2 + positions[3][1] + trunk_width
     ])
         square([thickness, diameter(4) / 2]);
     // Top of layer #3
     translate([
         thickness * 3.5 + positions[2][0],
-        positions[2][1] + trunk_width
+        thickness * 2 + positions[2][1] + trunk_width
     ])
         square([thickness, diameter(3) / 2]);
     // Bottom of layer #5
