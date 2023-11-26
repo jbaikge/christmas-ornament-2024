@@ -1,10 +1,13 @@
-$fn = 10;
+$fn = 20;
 
 // This defines the scale for everything
 height = 140;
 
 // How thick to make the pieces
 thickness = 2;
+
+// How thick to make the supports
+support_thickness = 0.6;
 
 width = height * 3 / 4;
 trunk_width = height / 8;
@@ -120,6 +123,64 @@ linear_extrude(thickness) {
     }
 }
 
+// Supports
+color("goldenrod") linear_extrude(support_thickness) {
+    // Bottom of main trunk
+    translate([
+        thickness * 3.5 + trunk_width / 2,
+        0
+    ])
+        square([thickness, thickness * 4]);
+    // Through the middle of all trunk pieces
+    translate([
+        0,
+        thickness * 3 + height * 0.50
+    ])
+        square([thickness * 3 + trunk_width * 2, thickness]);
+    // Bottom (top?) of left trunk
+    translate([
+        thickness * 4 + trunk_width * 1.333 - trunk_width / 3 / 2,
+        thickness * 4 + height - 1
+    ])
+        square([trunk_width / 3 / 2 - thickness / 2, thickness * 4]);
+    // Bottom (top?) of right trunk
+    translate([
+        thickness * 4 + trunk_width * 1.666 + thickness / 2,
+        thickness * 4 + height - 1
+    ])
+        square([trunk_width / 3 / 2 - thickness / 2, thickness * 4]);
+    // Bottom of layer #1
+    translate([
+        thickness * 3.5 + positions[0][0],
+        0
+    ])
+        square([thickness, thickness * 2 + positions[0][1]]);
+    // Top of layer #1
+    translate([
+        thickness * 3.5 + positions[0][0],
+        thickness * 5.5 + positions[0][1]
+    ])
+        square([thickness, diameter(6) / 2]);
+    // Bottom of layer #2
+    translate([
+        thickness * 3.5 + positions[1][0],
+        0
+    ])
+        square([thickness, positions[1][1]]);
+    // Top of layer #2
+    translate([
+        thickness * 3.5 + positions[1][0],
+        thickness * 6.0 + positions[1][1]
+    ])
+        square([thickness, diameter(6) / 2]);
+    // Top of layer #6
+    translate([
+        thickness * 3.5 + positions[5][0],
+        trunk_width + positions[5][1]
+    ])
+        square([thickness, diameter(6) / 2]);
+}
+
 function diameter(i) = width * i / num;
 
 module base_trunk(height, trunk_width, thickness) {
@@ -148,11 +209,11 @@ module hanger_trunk(height, trunk_width, thickness) {
         translate([0, height + thickness / 2, 0])
             difference() {
                 union() {
-                    circle(thickness / 2);
+                    circle(thickness / 1.5);
                     translate([0, -thickness / 2, 0])
                         square(thickness, center = true);
                 }
-                circle(thickness / 4);
+                circle(thickness / 3);
             }
     }
 }
