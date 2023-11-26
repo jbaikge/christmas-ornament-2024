@@ -1,4 +1,4 @@
-$fn = 1000;
+$fn = 10;
 
 // This defines the scale for everything
 height = 140;
@@ -42,33 +42,81 @@ positions = [
 
 angles = rands(0, 360, num, height * width);
 
-difference() {
-    linear_extrude(thickness) {
-        translate([trunk_width / 2, 0, 0])
-            hanger_trunk(height, trunk_width, thickness);
+// Layers and trunk
+translate([thickness * 4, thickness * 4, 0]) {
+    difference() {
+        linear_extrude(thickness) {
+            translate([trunk_width / 2, 0, 0])
+                hanger_trunk(height, trunk_width, thickness);
 
-        translate([trunk_width * 1.333, height, 0])
-            rotate([180, 0, 0])
-                left_trunk(height, trunk_width, thickness);
+            translate([trunk_width * 1.333, height, 0])
+                rotate([180, 0, 0])
+                    left_trunk(height, trunk_width, thickness);
 
-        translate([trunk_width * 1.666, height, 0])
-            rotate([180, 0, 0])
-                right_trunk(height, trunk_width, thickness);
+            translate([trunk_width * 1.666, height, 0])
+                rotate([180, 0, 0])
+                    right_trunk(height, trunk_width, thickness);
 
-        for(i = [1 : 1 : num])
-            translate(positions[i-1])
-                rotate([0, 0, angles[i-1]])
-                    layer(i + 4, diameter(i));
+            // Place layers in a pattern to optimize space
+            for(i = [1 : 1 : num])
+                translate(positions[i-1])
+                    rotate([0, 0, angles[i-1]])
+                        layer(i + 4, diameter(i));
+        }
+
+        // Place the trunks in the center of each layer and position
+        // evenly along the Z axis
+        for (i = [1 : 1 : num]) {
+            position = [
+                positions[i-1][0],
+                positions[i-1][1],
+                -height * (num - i + 1) / (num + 1),
+            ];
+            translate(position)
+                vertical_trunk(height, trunk_width, thickness);
+        }
     }
+}
 
-    for (i = [1 : 1 : num]) {
-        position = [
-            positions[i-1][0],
-            positions[i-1][1],
-            -height * (num - i + 1) / (num + 1),
-        ];
-        translate(position)
-            vertical_trunk(height, trunk_width, thickness);
+// Outer ring
+linear_extrude(thickness) {
+    difference() {
+        hull() {
+            minX = thickness;
+            maxX = thickness * 2 + trunk_width * 4 + diameter(6) + diameter(5) + thickness * 4;
+            minY = thickness;
+            maxY = thickness * 4 * 2 + height;
+            // Lower left
+            translate([minX, minY, 0])
+                circle(thickness);
+            // Upper left
+            translate([minX, maxY, 0])
+                circle(thickness);
+            // Upper right
+            translate([maxX, maxY, 0])
+                circle(thickness);
+            // Lower right
+            translate([maxX, minY, 0])
+                circle(thickness);
+        }
+        hull() {
+            minX = thickness * 3;
+            maxX = thickness * 3 + trunk_width * 4 + diameter(6) + diameter(5) + thickness * 1;
+            minY = thickness * 3;
+            maxY = thickness * 3 * 2 + height;
+            // Lower left
+            translate([minX, minY, 0])
+                circle(thickness);
+            // Upper left
+            translate([minX, maxY, 0])
+                circle(thickness);
+            // Upper right
+            translate([maxX, maxY, 0])
+                circle(thickness);
+            // Lower right
+            translate([maxX, minY, 0])
+                circle(thickness);
+        }
     }
 }
 
