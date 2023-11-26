@@ -1,7 +1,7 @@
 $fn = 20;
 
 // This defines the scale for everything
-height = 140;
+height = 118;
 
 // How thick to make the pieces
 thickness = 2;
@@ -26,24 +26,26 @@ positions = [
         diameter(2) / 2
     ],
     [
-        trunk_width * 3.5 + diameter(6) + diameter(5) - diameter(3) / 2,
-        diameter(3) / 2
+        trunk_width * 3.5 + diameter(6) * 0.90,
+        height - diameter(3) / 2
     ],
     [
-        trunk_width * 3.5 + diameter(6),
-        diameter(4) / 2
+        trunk_width * 3.5 + diameter(6) + diameter(3) * 0.80,
+        height - diameter(4) / 2
     ],
     [
-        trunk_width * 4 + diameter(6) + diameter(5) / 2,
-        height - diameter(5) / 2
+        trunk_width * 4 + diameter(6) * 0.90,
+        diameter(5) / 2
     ],
     [
-        trunk_width * 2.25 + diameter(6) / 2,
+        trunk_width * 2.0 + diameter(6) / 2,
         height - diameter(6) / 2
     ],
 ];
 
-angles = rands(0, 360, num, height * width);
+angles = rands(0, 360, num, 10800);
+
+//#square([220, 140]);
 
 // Layers and trunk
 translate([thickness * 4, thickness * 4, 0]) {
@@ -86,9 +88,11 @@ linear_extrude(thickness) {
     difference() {
         hull() {
             minX = thickness;
-            maxX = thickness * 2 + trunk_width * 4 + diameter(6) + diameter(5) + thickness * 4;
+            maxX = thickness * 6 + positions[3][0] + diameter(4) / 2;
             minY = thickness;
             maxY = thickness * 4 * 2 + height;
+            if(maxX + thickness > 220)
+                echo("!!! maxX is outside printable area", maxX);
             // Lower left
             translate([minX, minY, 0])
                 circle(thickness);
@@ -104,7 +108,7 @@ linear_extrude(thickness) {
         }
         hull() {
             minX = thickness * 3;
-            maxX = thickness * 3 + trunk_width * 4 + diameter(6) + diameter(5) + thickness * 1;
+            maxX = thickness * 4 + positions[3][0] + diameter(4) / 2;
             minY = thickness * 3;
             maxY = thickness * 3 * 2 + height;
             // Lower left
@@ -179,6 +183,43 @@ color("goldenrod") linear_extrude(support_thickness) {
         trunk_width + positions[5][1]
     ])
         square([thickness, diameter(6) / 2]);
+    // Top of layer #4
+    translate([
+        thickness * 3.5 + positions[3][0],
+        positions[3][1] + trunk_width
+    ])
+        square([thickness, diameter(4) / 2]);
+    // Top of layer #3
+    translate([
+        thickness * 3.5 + positions[2][0],
+        positions[2][1] + trunk_width
+    ])
+        square([thickness, diameter(3) / 2]);
+    // Bottom of layer #5
+    translate([
+        thickness * 3.5 + positions[4][0],
+        0
+    ])
+        square([thickness, diameter(4) / 2]);
+    // Custom tri-spiked piece to hold layers 3, 4, and 5 in place
+    center_345 = [
+        thickness * 3.5 + (positions[4][0] + positions[3][0] + positions[2][0]) / 3,
+        thickness * 3.5 + (positions[4][1] + positions[3][1] + positions[2][1]) / 3
+    ];
+    translate(center_345)
+        circle(thickness);
+    translate(center_345)
+        rotate([0, 0, 60])
+            translate([-thickness / 2, 0, 0])
+                square([thickness, diameter(3) / 2]);
+    translate(center_345)
+        rotate([0, 0, 300])
+            translate([-thickness / 2, 0, 0])
+                square([thickness, diameter(4) / 2 - trunk_width / 2]);
+    translate(center_345)
+        rotate([0, 0, 180])
+            translate([-thickness / 2, 0, 0])
+                square([thickness, diameter(5) / 2 - trunk_width / 2]);
 }
 
 function diameter(i) = width * i / num;
@@ -257,6 +298,11 @@ module vertical_trunk(height, trunk_width, thickness) {
         }
 }
 
+/**
+ * Uses a bunch of trig to figure out how to make each layer
+ *
+ * @see https://calcresource.com/geom-ngon.html
+ */
 module layer (teeth, diameter) {
     tip_radius = diameter / 2;
     echo("tip radius", tip_radius);
@@ -282,6 +328,7 @@ module layer (teeth, diameter) {
 
     reference_radius = tip_radius - tooth_radius;
 
+    //#circle(tip_radius);
     circle(root_radius, $fn = teeth * 2);
     for(i = [1 : 1 : teeth])
         rotate([0, 0, i / teeth * 360])
