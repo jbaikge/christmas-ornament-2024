@@ -4,7 +4,7 @@ $fn = 20;
 height = 100;
 
 // How thick to make the pieces
-thickness = 2;
+thickness = 0.2 * 10;
 
 // How thick to make the supports
 support_thickness = 0.2 * 3;
@@ -48,8 +48,6 @@ positions = [
 
 //angles = rands(0, 360, num, 10800);
 angles = [174.732, 45, 152.613, 53.7928, 45.1305, 11.5987];
-
-//#square([220, 140]);
 
 // Layers and trunk
 translate([thickness * 4, thickness * 4, 0]) {
@@ -226,6 +224,28 @@ color("goldenrod") linear_extrude(support_thickness) {
                 square([support_width, diameter(5) / 2 - trunk_width / 2]);
 }
 
+// Message
+
+union() {
+    translate([thickness * 4 + positions[3][0] + diameter(4) / 2, thickness * 3, 0])
+        linear_extrude(support_thickness)
+            rotate([0, 0, 90])
+                hull() {
+                    translate([0, 0, 0])
+                        square(thickness * 2, center = true);
+                    translate([0, thickness * 3, 0])
+                        square(thickness * 2, center = true);
+                    translate([thickness * 2 * 14.5, thickness * 3, 0])
+                        circle(thickness);
+                    translate([thickness * 2 * 14.5, 0, 0])
+                        square(thickness * 2, center = true);
+                }
+    translate([thickness * 4 + positions[3][0] + diameter(4) / 2, thickness * 3, support_thickness])
+        color("grey")
+            linear_extrude(support_thickness)
+                rotate([0, 0, 90])
+                    text("Merry Christmas 2024", font = "Noto Sanss:style=Bold", size = thickness * 2);
+}
 function diameter(i) = width * i / num;
 
 module base_trunk(height, trunk_width, thickness) {
@@ -254,11 +274,11 @@ module hanger_trunk(height, trunk_width, thickness) {
         translate([0, height + thickness / 2, 0])
             difference() {
                 union() {
-                    circle(thickness / 1.5);
+                    circle(thickness / 1.25);
                     translate([0, -thickness / 2, 0])
                         square(thickness, center = true);
                 }
-                circle(thickness / 3);
+                circle(thickness / 2.5);
             }
     }
 }
