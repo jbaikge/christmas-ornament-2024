@@ -7,7 +7,10 @@ height = 100;
 thickness = 2;
 
 // How thick to make the supports
-support_thickness = 0.6;
+support_thickness = 0.2 * 3;
+
+// How wide to make supports as a function of extrusion width
+support_width = 0.4 * 3;
 
 width = height * 3 / 4;
 trunk_width = height / 8;
@@ -132,16 +135,16 @@ linear_extrude(thickness) {
 color("goldenrod") linear_extrude(support_thickness) {
     // Bottom of main trunk
     translate([
-        thickness * 3.5 + trunk_width / 2,
+        thickness * 4 - support_width / 2 + trunk_width / 2,
         0
     ])
-        square([thickness, thickness * 4]);
+        square([support_width, thickness * 4]);
     // Through the middle of all trunk pieces
     translate([
         0,
         thickness * 3 + height * 0.50
     ])
-        square([thickness * 3 + trunk_width * 2, thickness]);
+        square([thickness * 3 + trunk_width * 2, support_width]);
     // Bottom (top?) of left trunk
     translate([
         thickness * 4 + trunk_width * 1.333 - trunk_width / 3 / 2,
@@ -159,49 +162,49 @@ color("goldenrod") linear_extrude(support_thickness) {
         thickness * 3.5 + positions[0][0],
         0
     ])
-        square([thickness, thickness * 2 + positions[0][1]]);
+        square([support_width, thickness * 3 + positions[0][1]]);
     // Top of layer #1
     translate([
         thickness * 3.5 + positions[0][0],
         thickness * 5.5 + positions[0][1]
     ])
-        square([thickness, diameter(6) / 2]);
+        square([support_width, diameter(6) / 2]);
     // Bottom of layer #2
     translate([
         thickness * 3.5 + positions[1][0],
         0
     ])
-        square([thickness, positions[1][1]]);
+        square([support_width, positions[1][1]]);
     // Top of layer #2
     translate([
         thickness * 3.5 + positions[1][0],
         thickness * 6.0 + positions[1][1]
     ])
-        square([thickness, diameter(6) / 2]);
+        square([support_width, diameter(6) / 2]);
     // Top of layer #6
     translate([
         thickness * 3.5 + positions[5][0],
         thickness * 2 + positions[5][1] + trunk_width
     ])
-        square([thickness, diameter(6) / 2]);
+        square([support_width, diameter(6) / 2]);
     // Top of layer #4
     translate([
         thickness * 3.5 + positions[3][0],
         thickness * 2 + positions[3][1] + trunk_width
     ])
-        square([thickness, diameter(4) / 2]);
+        square([support_width, diameter(4) / 2]);
     // Top of layer #3
     translate([
         thickness * 3.5 + positions[2][0],
         thickness * 2 + positions[2][1] + trunk_width
     ])
-        square([thickness, diameter(3) / 2]);
+        square([support_width, diameter(3) / 2]);
     // Bottom of layer #5
     translate([
         thickness * 3.5 + positions[4][0],
         0
     ])
-        square([thickness, diameter(4) / 2]);
+        square([support_width, diameter(4) / 2]);
     // Custom tri-spiked piece to hold layers 3, 4, and 5 in place
     center_345 = [
         thickness * 3.5 + (positions[4][0] + positions[3][0] + positions[2][0]) / 3,
@@ -211,16 +214,16 @@ color("goldenrod") linear_extrude(support_thickness) {
         circle(thickness);
     translate(center_345)
         rotate([0, 0, 60])
-            translate([-thickness / 2, 0, 0])
-                square([thickness, diameter(3) / 2]);
+            translate([-support_width / 2, 0, 0])
+                square([support_width, diameter(3) / 2]);
     translate(center_345)
         rotate([0, 0, 300])
-            translate([-thickness / 2, 0, 0])
-                square([thickness, diameter(4) / 2 - trunk_width / 2]);
+            translate([-support_width / 2, 0, 0])
+                square([support_width, diameter(4) / 2 - trunk_width / 2]);
     translate(center_345)
         rotate([0, 0, 180])
-            translate([-thickness / 2, 0, 0])
-                square([thickness, diameter(5) / 2 - trunk_width / 2]);
+            translate([-support_width / 2, 0, 0])
+                square([support_width, diameter(5) / 2 - trunk_width / 2]);
 }
 
 function diameter(i) = width * i / num;
