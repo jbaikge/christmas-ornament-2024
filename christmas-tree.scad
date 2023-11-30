@@ -1,10 +1,12 @@
-$fn = 20;
+$fn = 100;
 
 // This defines the scale for everything
 height = 100;
 
+layer_thickness = 0.2;
+
 // How thick to make the pieces
-thickness = 0.2 * 10;
+thickness = layer_thickness * 10;
 
 // How thick to make the supports
 support_thickness = 0.2 * 3;
@@ -51,38 +53,32 @@ angles = [174.732, 45, 152.613, 53.7928, 45.1305, 11.5987];
 
 // Layers and trunk
 translate([thickness * 4, thickness * 4, 0]) {
-    difference() {
-        linear_extrude(thickness) {
-            translate([trunk_width / 2, 0, 0])
-                hanger_trunk(height, trunk_width, thickness);
+    linear_extrude(thickness) {
+        translate([trunk_width / 2, 0, 0])
+            hanger_trunk(height, trunk_width, thickness);
 
-            translate([trunk_width * 1.333, height, 0])
-                rotate([180, 0, 0])
-                    left_trunk(height, trunk_width, thickness);
+        translate([trunk_width * 1.333, height, 0])
+            rotate([180, 0, 0])
+                left_trunk(height, trunk_width, thickness);
 
-            translate([trunk_width * 1.666, height, 0])
-                rotate([180, 0, 0])
-                    right_trunk(height, trunk_width, thickness);
+        translate([trunk_width * 1.666, height, 0])
+            rotate([180, 0, 0])
+                right_trunk(height, trunk_width, thickness);
+    }
 
-            // Place layers in a pattern to optimize space
-            for(i = [1 : 1 : num])
-                translate(positions[i-1])
+    for (i = [1 : 1 : num])
+        translate(positions[i-1])
+            difference() {
+                linear_extrude(thickness)
                     rotate([0, 0, angles[i-1]])
                         layer(i + 4, diameter(i));
-        }
-
-        // Place the trunks in the center of each layer and position
-        // evenly along the Z axis
-        for (i = [1 : 1 : num]) {
-            position = [
-                positions[i-1][0],
-                positions[i-1][1],
-                -height * (num - i + 1) / (num + 1),
-            ];
-            translate(position)
-                vertical_trunk(height, trunk_width, thickness);
-        }
-    }
+                translate([0, 0, -height * (num - i + 1) / (num + 1)])
+                    vertical_trunk(height, trunk_width, thickness);
+                translate([0, 0, thickness - layer_thickness])
+                    linear_extrude(thickness)
+                        rotate([0, 0, angles[i-1]])
+                            layer_inset(i + 4, diameter(i));
+            }
 }
 
 // Outer ring
@@ -358,4 +354,36 @@ module layer (teeth, diameter) {
         rotate([0, 0, i / teeth * 360])
             translate([reference_radius, 0, 0])
                 circle(tooth_radius, $fn = 3);
+}
+
+module layer_inset (teeth, diameter) {
+    tip_radius = diameter / 2;
+    echo("tip radius", tip_radius);
+
+    central_angle = 360 / teeth;
+    echo("central angle", central_angle);
+
+    // Create a triangle with:
+    // bottom length = tip_radius
+    // left angle = central_angle / 2
+    // right angle = 30 (1/2 equilateral triangle angle)
+    // Find the length of the right side
+    obtuse_angle = 180 - 30 - central_angle / 2;
+    tooth_edge = tip_radius * sin(central_angle / 2) / sin(obtuse_angle);
+    root_radius = tip_radius * sin(30) / sin(obtuse_angle);
+    echo("tooth side", tooth_edge);
+
+    tooth_height = sqrt(3) * tooth_edge / 2;
+    echo("tooth height", tooth_height);
+
+    tooth_radius = tooth_edge / sqrt(3);
+    echo("tooth radius", tooth_radius);
+
+    reference_radius = tip_radius - tooth_height * 0.25;
+
+    for(i = [1 : 1 : teeth])
+        rotate([0, 0, i / teeth * 360])
+            translate([reference_radius, 0, 0])
+                circle(tooth_radius);
+
 }
